@@ -1,5 +1,5 @@
 {
-    "name": "aws-iot-wizard",
+    "name": "aws-iot-connector",
     "tags": {
       "description":"AWS IoT Connector",
       "icon": "/images/aws.svg",
