@@ -1,0 +1,88 @@
+{
+    "name": "aws-iot-wizard",
+    "tags": {
+      "description":"AWS IoT Connector",
+      "icon": "/images/aws.svg",
+      "attribution": "public",
+      "inputs": {
+          "AWS_ACCESS_KEY_ID": {
+            "type": "string",
+            "maxlength":30,
+            "value": "",
+            "type":"text",
+            "description": "AWS Access Key ID",
+            "minlength": 10
+          },
+          "AWS_SECRET_ACCESS_KEY": {
+            "type": "string",
+            "description": "Please provide AWS Access Key Secret",
+            "minlength": 10,
+            "maxlength":100,
+            "type":"text",
+            "value": ""
+          },
+          "AWS_IOT_REGION": {
+            "type": "string",
+            "description": "AWS Region (e.g. eu-west-1 or us-east-1)",
+            "minlength": 5,
+            "maxlength":100,
+            "type":"text",
+            "value": ""
+          }
+        }
+    },
+    "labels": [],
+    "version": 1,
+    "definition": {
+        "protocol": "none",
+        "clientId": "",
+        "additionalPackages": {
+            "AWS": {
+                "type": "npm",
+                "content": "@aws-sdk/client-iot",
+                "name": "AWS"
+            }
+        },
+        "strategy": "Default",
+        "settings": {
+            "loopback": true
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  setEnv(\"AWS_ACCESS_KEY_ID\", \"%%AWS_ACCESS_KEY_ID%%\");\n  setEnv(\"AWS_SECRET_ACCESS_KEY\", \"%%AWS_SECRET_ACCESS_KEY%%\");\n\n  var iot = new AWS.IoT({ region: \"%%AWS_IOT_REGION%%\" });\n  state.iot = iot;\n\n  // Following steps are only needed for client 0 (one time)\n  if (client() > 0) {\n    return next('createThing');\n  }\n\n  console.log(\"Setting up policy for Master client\");\n  try {\n    let params = {\n      thingGroupName: \"iotify\" /* required */,\n      thingGroupProperties: {\n        attributePayload: {\n          attributes: { x: \"1\" },\n          merge: true,\n        },\n        thingGroupDescription: \"Automatically created group with IoTIFY deployer\",\n      },\n    };\n    let result = await iot.createThingGroup(params);\n    console.log(result);\n\n  }\n  catch (e) {\n    console.error(e.message);\n  }\n\n  try {\n      params = {\n        thingTypeName: \"iotify_type\" /* required */,\n        thingTypeProperties: {\n          searchableAttributes: [\"clientId\"],\n          thingTypeDescription:\n            \"Automatically created thing type with IoTIFY deployer\",\n        },\n      };\n      await iot.createThingType(params);\n  }\n  catch (e) {\n    console.error(e.message);\n  }\n\n  try {\n    const policy = `{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": \"iot:*\",\n      \"Resource\": \"*\"\n    }\n  ]\n  }`;\n\n    params = {\n      policyDocument: policy /* required */,\n      policyName: \"IOTIFY_AUTOMATED_POLICY\" /* required */,\n    };\n    await iot.createPolicy(params);\n  }\n  catch (e) {\n      console.error(e.message);\n  }\n\n    let data = await iot.describeEndpoint({});\n    glob.set(\"aws_iot_endpoint\", data.endpointAddress);\n\n  next('createThing');\n}\n",
+                    "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n",
+                    "icon": "",
+                    "index": 0
+                },
+                "createThing": {
+                    "index": 1,
+                    "name": "createThing",
+                    "isEnabled": true,
+                    "sender": "\n{\n\n  let params = {\n    thingName: \"iotify_\" + client() /* required */,\n    attributePayload: {\n      attributes: {\n        clientId: client() + \"\",\n      },\n      merge: true,\n    },\n    thingTypeName: \"iotify_type\",\n  };\n\n  let data = await state.iot.createThing(params);\n\n  params = {\n    thingGroupName: \"iotify\",\n    thingName: data.thingName,\n  };\n  await state.iot.addThingToThingGroup(params);\n\n  next('attachCert');\n  \n}\n",
+                    "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n"
+                },
+                "attachCert": {
+                    "index": 2,
+                    "name": "attachCert",
+                    "isEnabled": true,
+                    "sender": "\n{\n  let cert = await state.iot.createKeysAndCertificate({\n    setAsActive: true,\n  });\n\n  //console.log(\"Received Certificate\", cert);\n\n  glob.set(\"aws_iotify_\" + client() + \"_key\", cert.keyPair.PrivateKey);\n  glob.set(\"aws_iotify_\" + client() + \"_cert\", cert.certificatePem);\n\n  params = {\n    policyName: \"IOTIFY_AUTOMATED_POLICY\" /* required */,\n    target: cert.certificateArn /* required */,\n  };\n\n  await state.iot.attachPolicy(params);\n\n  var params = {\n    principal: cert.certificateArn /* required */,\n    thingName: \"iotify_\" + client() /* required */,\n  };\n\n  await state.iot.attachThingPrincipal(params);\n\n  next('Finished');\n}\n",
+                    "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n"
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n",
+                    "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n",
+                    "icon": "",
+                    "index": 3
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
