@@ -4,6 +4,14 @@
       "description":"AWS IoT Connector",
       "icon": "/images/aws.svg",
       "attribution": "public",
+      "pre_notification":{
+        "title": "AWS IoT Connector",
+        "message": "This template will enroll AWS IoT devices in the IoT core. Please provide IAM credentials and other required parameters in the next dialog box."
+      },
+      "post_notification":{
+        "title": "AWS IoT Wizard Success",
+        "message": "A new template has been created in the workspace. Run this template with required number of clients to be provisioned and 5 iterations."
+      },    
       "inputs": {
           "AWS_ACCESS_KEY_ID": {
             "type": "string",
