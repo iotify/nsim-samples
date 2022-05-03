@@ -10,7 +10,7 @@
       },
       "post_notification":{
         "title": "AWS IoT Wizard Success",
-        "message": "A new template has been created in the workspace. Run this template with required number of clients to be provisioned and 5 iterations."
+        "message": "A new template named aws-iot-connector has been created in your workspace. Run this template with required number of clients to be provisioned and 5 iterations. This will provision and enroll specified devices in AWS environment and store certificates in the glob storage."
       },    
       "inputs": {
           "AWS_ACCESS_KEY_ID": {
