@@ -1,0 +1,75 @@
+{
+    "name": "Smart Home",
+    "tags": {
+	"description":"Smart Home Template",
+      "icon": "",
+      "attribution": "public"},
+    "labels": ["smarthome","advanced", "lights", "home" ],
+    "version": 1,
+    "definition": {
+        "protocol": "mqtt",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  //initialize some default values for your home\n\n  state.address = chance.address();\n  // state.gps = location({ address: 'San Francisco, USA', accuracy: 500 });\n  state.alarmEnabled = false;\n  state.alarmDetected = false;\n  state.rooms = {\n    living: { name: \"Living Room\", lights: true, occupancy: true, aircondition: true, temperature: 55, alarm: false },\n    bed: { id: 2, name: \"Bed Room\", lights: false, occupancy: false, aircondition: false, temperature: 60, alarm: false },\n    kitchen: { id: 3, name: \"Kitchen\", lights: false, occupancy: false, aircondition: false, temperature: 58, alarm: false }\n  };\n\n  state.currentPowerConsumption = 0; // watt\n\n  next('Day')\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Day": {
+                    "name": "Day",
+                    "isEnabled": true,
+                    "sender": "\n{\n  let currentHour = dayjs().hour()\n\n  if (currentHour > 7 && currentHour < 20) //normal day\n    {\n      // Lights and airconditioning will mostly be dependent upon occupancy. \n      state.rooms.kitchen.occupancy = chance.bool({ likelihood: 60 });\n      state.rooms.kitchen.lights = state.rooms.kitchen.occupancy ? chance.bool({ likelihood: 5 }) : false;\n      state.rooms.kitchen.aircondition = state.rooms.kitchen.occupancy ? chance.bool({ likelihood: 50 }) : false;\n      state.rooms.kitchen.temperature = state.rooms.kitchen.aircondition ? chance.integer({ min: 15, max: 30 }): chance.integer({ min: 45, max: 55 });\n      state.rooms.kitchen.alarm = chance.bool({ likelihood: 30 });\n\n      state.rooms.living.occupancy = chance.bool({ likelihood: 70 });\n      state.rooms.living.lights = state.rooms.living.occupancy ? chance.bool({ likelihood: 5 }) : false;\n      state.rooms.living.aircondition = state.rooms.living.occupancy ? chance.bool({ likelihood: 50 }) : false;\n      state.rooms.living.temperature = state.rooms.living.aircondition ? chance.integer({ min: 15, max: 30 }) : chance.integer({ min: 45, max: 55 });\n      state.rooms.living.alarm = chance.bool({ likelihood: 30 });\n\n      state.rooms.bed.occupancy = chance.bool({ likelihood: 50 });\n      state.rooms.bed.lights = state.rooms.bed.occupancy ? chance.bool({ likelihood: 5 }) : false;\n      state.rooms.bed.aircondition = state.rooms.bed.occupancy ? chance.bool({ likelihood: 5 }) : false;\n      state.rooms.bed.temperature = state.rooms.bed.aircondition ? chance.integer({ min: 15, max: 30 }) : chance.integer({ min: 45, max: 55 });\n      state.rooms.bed.alarm = false;\n\n      //static consumption from appliances like Fridge etc. \n      state.currentPowerConsumption = 500;\n\n      Object.keys(state.rooms).forEach(function (key) {\n        if (state.rooms[key].lights)\n          state.currentPowerConsumption += 100;\n\n        if (state.rooms[key].aircondition)\n          state.currentPowerConsumption += 450;\n\n      });\n\n      metric.add('home-' + client() + '-power', state.currentPowerConsumption);\n\n      //return a string value which will be sent as the message payload\n      return JSON.stringify(state, null, 2);\n      \n  }  \n\n  else {\n    next('Night');\n  }\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 1
+                },
+                "Night": {
+                    "name": "Night",
+                    "isEnabled": true,
+                    "sender": "\n{\n  let currentHour = dayjs().hour()\n\n  if (currentHour < 7 || currentHour > 20) {\n\n    state.rooms.kitchen.occupancy = chance.bool({ likelihood: 5 });\n    state.rooms.kitchen.lights = state.rooms.kitchen.occupancy ? chance.bool({ likelihood: 50 }) : false;\n    state.rooms.kitchen.aircondition = state.rooms.kitchen.occupancy ? chance.bool({ likelihood: 10 }) : false;\n    state.rooms.kitchen.temperature = state.rooms.kitchen.aircondition ? chance.integer({ min: 15, max: 30 }) : chance.integer({ min: 45, max: 55 });\n    state.rooms.kitchen.alarm = chance.bool({ likelihood: 30 });\n\n    state.rooms.living.occupancy = chance.bool({ likelihood: 40 });\n    state.rooms.living.lights = state.rooms.living.occupancy ? chance.bool({ likelihood: 50 }) : false;\n    state.rooms.living.aircondition = state.rooms.living.occupancy ? chance.bool({ likelihood: 50 }) : false;\n    state.rooms.living.temperature = state.rooms.living.aircondition ? chance.integer({ min: 15, max: 30 }) : chance.integer({ min: 45, max: 55 });\n    state.rooms.living.alarm = chance.bool({ likelihood: 30 });\n\n    state.rooms.bed.occupancy = chance.bool({ likelihood: 75 });\n    state.rooms.bed.lights = state.rooms.bed.occupancy ? chance.bool({ likelihood: 50 }) : false;\n    state.rooms.bed.aircondition = state.rooms.bed.occupancy ? chance.bool({ likelihood: 50 }) : false;\n    state.rooms.bed.temperature = state.rooms.bed.aircondition ? chance.integer({ min: 15, max: 30 }) : chance.integer({ min: 45, max: 55 });\n    state.rooms.bed.alarm = false;\n\n    //static consumption from appliances like Fridge etc. \n    state.currentPowerConsumption = 500;\n\n    Object.keys(state.rooms).forEach(function (key) {\n      if (state.rooms[key].lights)\n        state.currentPowerConsumption += 100;\n\n      if (state.rooms[key].aircondition)\n        state.currentPowerConsumption += 450;\n\n    });\n\n    metric.add('home-' + client() + '-power', state.currentPowerConsumption);\n\n    //return a string value which will be sent as the message payload\n    return JSON.stringify(state, null, 2);\n\n  } \n\n  else {\n    next('Day');\n  }\n\n}\n",
+                    "receiver": "",
+                    "index": 2,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 3
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}

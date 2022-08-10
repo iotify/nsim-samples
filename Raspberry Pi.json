@@ -1,0 +1,83 @@
+{
+    "name": "Raspberry Pi",
+    "tags": {
+	"description":"Raspberry Pi Template",
+      "icon": "",
+      "attribution": "public"},
+    "labels": ["development","advanced", "microprocessor", "iot" ],
+    "version": 1,
+    "definition": {
+        "protocol": "mqtt",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  \n  state.battery = 100\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Idle": {
+                    "name": "Idle",
+                    "isEnabled": true,
+                    "sender": "{\n  // simulate a connected data logger device\n  state.battery = state.battery - 1\n  var now = dayjs().format()\n\n  var message = {\n    timestamp: now,\n    battery: state.battery,\n    cpu_usage: cpu(),\n    ram_usage: memory(),\n    cpu_temperature: 50 + chance.integer({ min: -10, max: 30 }),\n  }\n\n  if (state.battery < 5) {\n    next('Charging')\n  }\n  else {\n    if (chance.bool({ likelihood: 5 })) {\n      next(\"Active\");\n    } else {\n      next(\"Idle\");\n    }\n  }\n\n  return JSON.stringify(message, null, 2)\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 1
+                },
+                "Active": {
+                    "name": "Active",
+                    "isEnabled": true,
+                    "sender": "{\n  // simulate a connected data logger device\n  state.battery = state.battery - 2;\n  var now = dayjs().format();\n\n  var message = {\n    timestamp: now,\n    battery: state.battery,\n    cpu_usage: cpu(),\n    ram_usage: memory(),\n    cpu_temperature: 70 + chance.integer({ min: -10, max: 30 }),\n    air_temperature: weather.temperature({ location: \"Switzerland\", unit: \"c\", }),\n    humidity: weather.humidity({ location: \"Switzerland\" }),\n  };\n\n  if (state.battery < 5) {\n    next(\"Charging\");\n  }\n  else {\n    if (chance.bool({ likelihood: 5 })) {\n      next(\"Idle\");\n    } else {\n      next(\"Active\");\n    }\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 2,
+                    "icon": ""
+                },
+                "Charging": {
+                    "name": "Charging",
+                    "isEnabled": true,
+                    "sender": "{\n  // simulate a connected data logger device\n  if (state.battery < 95) {\n    state.battery = state.battery + 5;\n\n    var now = dayjs().format();\n\n    var message = {\n      timestamp: now,\n      battery: state.battery,\n      cpu_usage: cpu(),\n      ram_usage: memory(),\n      cpu_temperature: 70 + chance.integer({ min: -10, max: 30 }),\n      air_temperature: weather.temperature({ location: \"Switzerland\", unit: \"c\", }),\n      humidity: weather.humidity({ location: \"Switzerland\" }),\n    };\n\n    return JSON.stringify(message, null, 2);\n  }\n  else {\n    if (chance.bool({ likelihood: 5 })) {\n      next(\"Idle\");\n    } else {\n      next(\"Active\");\n    }\n  }\n}\n",
+                    "receiver": "",
+                    "index": 3,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 4
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}

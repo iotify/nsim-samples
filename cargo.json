@@ -1,16 +1,33 @@
 {
     "name": "Cargo",
-    "version": 1,
     "tags": {
-      "description":"Cargo Templates",
-      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/cargo.png",
-      "attribution": "public"
+        "description": "Cargo Templates",
+        "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/cargo.png",
+        "attribution": "public"
     },
-    "labels": ["smarthome","advanced", "transportation", "logistics" ],
+    "labels": [
+        "smarthome",
+        "advanced",
+        "transportation",
+        "logistics"
+    ],
+    "version": 1,
     "definition": {
         "protocol": "none",
         "clientId": "",
-        "additionalPackages": {},
+        "additionalPackages": {
+            "geolib": {
+                "content": "geolib",
+                "name": "geolib",
+                "type": "npm",
+                "isLoading": false,
+                "errorMessage": "",
+                "validity": {
+                    "isImportNameValid": true,
+                    "isContentValid": true
+                }
+            }
+        },
         "strategy": "Default",
         "settings": {
             "loopback": true
@@ -21,7 +38,7 @@
                 "Init": {
                     "name": "Init",
                     "isEnabled": true,
-                    "sender": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  next('Running');\n  \n}\n",
+                    "sender": "\n{\n  //Simulate a cargo container near Amsterdam\n  state.position = {\n    longitude: 52.021252,\n    latitude: 3.986965\n  };\n\n  next('Runnnig')  \n}\n",
                     "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n",
                     "icon": "",
                     "index": 0
@@ -29,7 +46,7 @@
                 "Running": {
                     "name": "Running",
                     "isEnabled": true,
-                    "sender": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  next('Init');\n  \n}\n",
+                    "sender": "{\n  //Increment location linearly at 270 degree bearing and 1km distance from last\n  state.position = geolib.computeDestinationPoint(state.position, 1000, 270);\n\n  // Simulated cargo temperature\n  state.temperature = volatile({ min: 10, max: 70, delta: 2, key: \"cargotemp\", });\n\n  if (state.temperature > 20) {\n    state.alert = \"warning\"\n  }\n  else if (state.temperature > 30) {\n    state.alert = \"caution\"\n  }\n  else {\n    state.alert = \"none\"\n  }\n\n  //Use client() to find the current client ID\n  state.myid = \"Container_\" + client();\n\n  next('Running')\n\n  //return a string value which will be sent as the message payload\n  return JSON.stringify(state, null, 2);\n}\n",
                     "receiver": "\n{\n  //Please provide your logic here. \n  \n  //The device model state could be transitioned by calling next()\n  //To transition to a specific state pass state name as argument e.g. \n  //next('Running');\n  \n}\n",
                     "icon": "",
                     "index": 1
