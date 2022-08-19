@@ -2,7 +2,7 @@
     "name": "Plant Sensor",
    "tags": {
         "description": "Plant Sensor Template",
-        "icon": "https://github.com/iotify/nsim-samples/blob/70aeaa8582d6a911756da20eba0b3eb51520bd01/Images/Plant%20Sensor.png",
+        "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Plant%20Sensor.png",
         "attribution": "public"
     },
     "labels": ["smarthome","advanced", "plants", "water" ],

@@ -2,7 +2,7 @@
     "name": "Smart Fridge",
     "tags": {
 	"description":"Smart Fridge Template",
-      "icon": "https://github.com/iotify/nsim-samples/blob/70aeaa8582d6a911756da20eba0b3eb51520bd01/Images/Smart%20Fridge.png",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Fridge.png",
       "attribution": "public"},
     "labels": ["smarthome","fridge", "appliance", "home" ],
     "version": 1,

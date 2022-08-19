@@ -2,7 +2,7 @@
     "name": "Smart Home",
     "tags": {
 	"description":"Smart Home Template",
-      "icon": "https://github.com/iotify/nsim-samples/blob/70aeaa8582d6a911756da20eba0b3eb51520bd01/Images/Smart%20Home.png",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Home.png",
       "attribution": "public"},
     "labels": ["smarthome","advanced", "lights", "home" ],
     "version": 1,

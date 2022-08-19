@@ -2,7 +2,7 @@
     "name": "Smart Washing Machine",
     "tags": {
 	"description":"Smart Washing Machine Template",
-      "icon": "https://github.com/iotify/nsim-samples/blob/70aeaa8582d6a911756da20eba0b3eb51520bd01/Images/Smart%20Washing%20Machine.png",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Washing%20Machine.png",
       "attribution": "public"},
     "labels": ["smarthome","washing machine", "appliance", "home" ],
     "version": 1,
