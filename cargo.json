@@ -2,7 +2,7 @@
     "name": "Cargo",
     "tags": {
         "description": "Cargo Templates",
-        "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/cargo.png",
+        "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/cargo.png",
         "attribution": "public"
     },
     "labels": [

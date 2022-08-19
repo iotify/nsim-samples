@@ -2,7 +2,7 @@
     "name": "Raspberry Pi",
     "tags": {
 	"description":"Raspberry Pi Template",
-      "icon": "",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/Raspberry%20Pi.png",
       "attribution": "public"},
     "labels": ["development","advanced", "microprocessor", "iot" ],
     "version": 1,

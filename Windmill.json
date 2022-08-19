@@ -1,0 +1,80 @@
+{
+    "name": "Windmill",
+    "tags": {},
+    "labels": [],
+    "version": 1,
+    "definition": {
+        "protocol": "mqtt",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "\n{\n  state.current_energy_output = 0\n  state.total_energy_output = 0\n  state.rpm = 0\n\n  state.scheduled_maintenance_interval = 20\n  state.maintenance_cycles = 5\n  state.maintenance_due = false\n\n  next('Windy')\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Windy": {
+                    "name": "Windy",
+                    "isEnabled": true,
+                    "sender": "\n{\n  var now = dayjs().format()\n\n  state.rpm = chance.integer({ min: 700, max: 1000 })\n  state.current_energy_output = state.rpm*1.4\n  state.total_energy_output += state.current_energy_output\n\n  if (--state.scheduled_maintenance_interval <= 0) {\n    state.maintenance_due = true;\n    next('Maintenance')\n  }\n  \n  var message = {\n    timestamp: now,\n    status: \"windy\",\n    current_energy_output: state.current_energy_output,\n    total_energy_output: state.total_energy_output,\n    maintenance_due: state.maintenance_due\n  }\n\n  if (chance.bool({ likelihood: 1 })) {\n    next('Maintenance')\n  }\n  else {\n    if (chance.bool({ likelihood: 30 })) {\n      next('Normal')\n    }\n    else {\n      next('Windy')\n    }\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 1,
+                    "icon": ""
+                },
+                "Normal": {
+                    "name": "Normal",
+                    "isEnabled": true,
+                    "sender": "\n{\n  var now = dayjs().format()\n\n  state.rpm = chance.integer({ min: 0, max: 700 })\n  state.current_energy_output = state.rpm * 1.2\n  state.total_energy_output += state.current_energy_output\n\n  if (--state.scheduled_maintenance_interval <= 0) {\n    state.maintenance_due = true;\n    next('Maintenance')\n  }\n\n  var message = {\n    timestamp: now,\n    status: \"normal\",\n    current_energy_output: state.current_energy_output,\n    total_energy_output: state.total_energy_output,\n    maintenance_due: state.maintenance_due\n  }\n\n  if (chance.bool({ likelihood: 1 })) {\n    next('Maintenance')\n  }\n  else {\n    if (chance.bool({ likelihood: 30 })) {\n      next('Windy')\n    }\n    else {\n      next('Normal')\n    }\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 2
+                },
+                "Maintenance": {
+                    "name": "Maintenance",
+                    "isEnabled": true,
+                    "sender": "if (state.maintenance_due) {\n\n  var now = dayjs().format()\n  state.maintenance_due = false\n\n  var message = {\n    timestamp: now,\n    status: \"Under maintenance\"\n  }\n\n  if (--state.maintenance_cycles <= 0) {\n    state.maintenance_cycles = 5\n    state.maintenance_due = false\n\n    next('Windy')\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n\n\n\n\n",
+                    "receiver": "",
+                    "index": 3,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 4
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}

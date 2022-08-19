@@ -2,7 +2,7 @@
     "name": "Smart Elevator",
     "tags": {
 	"description":"Smart Elevator Template",
-      "icon": "",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/Smart%20Elevator.png",
       "attribution": "public"},
     "labels": ["smartbuilding","advanced", "elevator", "utility" ],
     "version": 1,

@@ -1,0 +1,107 @@
+{
+    "name": "Coffee Maker",
+    "tags": {
+	"description":"Smart Coffee Maker Template",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/Coffee%20Maker.png",
+      "attribution": "public"},
+    "labels": ["smarthome","coffee maker", "appliance", "home" ],
+    "version": 1,
+    "definition": {
+        "protocol": "mqtt",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  state.usage_count = 0\n  state.bean_level = 100\n  state.water_level = 100\n  state.milk_level = 100\n  state.chocolate_level = 100\n\n  state.grind_coffee = 3\n  state.extract_coffee = 2\n  state.boil_milk = 2\n  state.boil_water = 2\n  state.froth_milk = 2\n\n  state.options = [\n    {\n      espresso: true,\n      milk: true,\n      name: 'Latte',\n    },\n    {\n      espresso: true,\n      milk: true,\n      foam: true,\n      name: 'Cappucino',\n    },\n    {\n      espresso: true,\n      water: true,\n      name: 'Americano',\n    },\n    {\n      espresso: true,\n      foam: true,\n      name: 'Macchiato',\n    },\n    {\n      espresso: true,\n      milk: true,\n      chocolate: true,\n      name: 'Mocha',\n    },\n  ];\n\n  next('Start')\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Start": {
+                    "name": "Start",
+                    "isEnabled": true,
+                    "sender": "\n{\n  var now = dayjs().format()\n \n  state.current_brew = chance.integer({ min: 0, max: 4 })\n\n  console.log(\"Starting brew: \" + state.options[state.current_brew].name)\n  state.usage_count = state.usage_count + 1\n\n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  next('Espresso')\n\n  return JSON.stringify(message, null, 2);\n\n}",
+                    "receiver": "",
+                    "index": 1,
+                    "icon": ""
+                },
+                "Espresso": {
+                    "name": "Espresso",
+                    "isEnabled": true,
+                    "sender": "{ \n  var now = dayjs().format()\n\n  while (state.refilling_coffee) {\n    console.log(\"Refilling Beans\")\n    if (state.bean_level < 80) {\n      state.bean_level += 20\n    }\n    else {\n      state.bean_level = 100\n      state.refilling_coffee = false\n    }\n  }\n\n  if (state.bean_level <= 20) {\n    state.refilling_coffee = true\n  }\n  else {\n    \n    if (--state.grind_coffee <= 0) {\n      console.log(\"Coffee beans grinded\")\n\n      if (--state.extract_coffee <= 0) {\n\n        state.bean_level -= chance.integer({ min: 1, max: 5 })\n        console.log(\"Espresso made\")\n        \n        state.grind_coffee = 2\n        state.extract_coffee = 2\n\n        if (state.options[state.current_brew].milk) {\n          next('Milk')\n        }\n        else if (state.options[state.current_brew].water) {\n          next('Water')\n        }\n        else if (state.options[state.current_brew].foam) {\n          next('Foam')\n        }\n      }\n    }\n  }\n\n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  return JSON.stringify(message, null, 2);\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 2
+                },
+                "Milk": {
+                    "name": "Milk",
+                    "isEnabled": true,
+                    "sender": "{\n  var now = dayjs().format()\n\n  while (state.refilling_milk) {\n    console.log(\"Refilling Milk\")\n    if (state.milk_level < 80) {\n      state.milk_level += 20\n    }\n    else {\n      state.milk_level = 100\n      state.refilling_milk = false\n    }\n  }\n\n  if (state.milk_level <= 20) {\n    state.refilling_milk = true\n  }\n  else {\n    if (--state.boil_milk <= 0) {\n      state.milk_level -= chance.integer({ min: 1, max: 5 })\n      console.log(\"Milk boiled\")\n      state.boil_milk = 2\n      \n      if (state.options[state.current_brew].foam) {\n        next('Foam')\n      }\n      else if (state.options[state.current_brew].chocolate) {\n        next('Chocolate')\n      }\n      else {\n        console.log(state.options[state.current_brew].name+\" is complete\")\n        next('Start')\n      }\n    }\n  }\n\n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  return JSON.stringify(message, null, 2);\n}",
+                    "receiver": "",
+                    "index": 3,
+                    "icon": ""
+                },
+                "Water": {
+                    "name": "Water",
+                    "isEnabled": true,
+                    "sender": "{\n  var now = dayjs().format()\n\n  while (state.refilling_water) {\n    console.log(\"Refilling Water\")\n    if (state.water_level < 80) {\n      state.water_level += 20\n    }\n    else {\n      state.water_level = 100\n      state.refilling_water = false\n    }\n  }\n\n  if (state.water_level <= 20) {\n    state.refilling_water = true\n  }\n  else {    \n    if (--state.boil_water <= 0) {\n      state.water_level -= chance.integer({ min: 1, max: 5 })\n      console.log(\"Water boiled\")\n      state.boil_water = 2\n      \n      console.log(state.options[state.current_brew].name + \" is complete\")\n      next('Start')\n    }\n  }\n\n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  return JSON.stringify(message, null, 2);\n}",
+                    "receiver": "",
+                    "index": 4,
+                    "icon": ""
+                },
+                "Foam": {
+                    "name": "Foam",
+                    "isEnabled": true,
+                    "sender": "{\n  var now = dayjs().format()\n\n  if (--state.froth_milk <= 0) {\n    console.log(\"Froth created\")\n    state.froth_milk = 2\n\n    console.log(state.options[state.current_brew].name + \" is complete\")\n    next('Start')\n  }\n  \n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  return JSON.stringify(message, null, 2);\n}",
+                    "receiver": "",
+                    "index": 5,
+                    "icon": ""
+                },
+                "Chocolate": {
+                    "name": "Chocolate",
+                    "isEnabled": true,
+                    "sender": "{\n  var now = dayjs().format();\n\n  while (state.refilling_chocolate) {\n    console.log(\"Refilling Chocolate\");\n    if (state.chocolate_level < 80) {\n      state.chocolate_level += 20;\n    } else {\n      state.chocolate_level = 100;\n      state.refilling_chocolate = false;\n    }\n  }\n\n  if (state.chocolate_level <= 20) {\n    state.refilling_chocolate = true;\n  } else {\n    state.chocolate_level -= chance.integer({ min: 1, max: 5 });\n    console.log(\"Chocolate added\");\n    console.log(state.options[state.current_brew].name + \" is complete\");\n    next(\"Start\");\n  }\n\n  var message = {\n    timestamp: now,\n    current_brew: state.options[state.current_brew].name,\n    usage_count: state.usage_count,\n    bean_level: state.bean_level,\n    water_level: state.water_level,\n    milk_level: state.milk_level,\n    chocolate_level: state.chocolate_level,\n  };\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 6,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 7
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}

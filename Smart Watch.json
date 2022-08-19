@@ -2,7 +2,7 @@
     "name": "Smart Watch",
     "tags": {
 	"description":"Smart Watch Template",
-      "icon": "",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/Smart%20Watch.png",
       "attribution": "public"},
     "labels": ["smartdevice","advanced", "watch", "wearable" ],
     "version": 1,
