@@ -2,7 +2,7 @@
     "name": "Coffee Maker",
     "tags": {
 	"description":"Smart Coffee Maker Template",
-      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/images/Coffee%20Maker.png",
+      "icon": "https://github.com/iotify/nsim-samples/blob/70aeaa8582d6a911756da20eba0b3eb51520bd01/Images/Coffee%20Maker.png",
       "attribution": "public"},
     "labels": ["smarthome","coffee maker", "appliance", "home" ],
     "version": 1,
