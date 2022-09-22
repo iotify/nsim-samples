@@ -1,12 +1,11 @@
 {
     "name": "Cargo",
     "tags": {
-        "description": "Cargo Templates",
+        "description": "Shipping cargo simulation",
         "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/cargo.png",
         "attribution": "public"
     },
     "labels": [
-        "smarthome",
         "advanced",
         "transportation",
         "logistics"

@@ -1,10 +1,10 @@
 {
     "name": "Smart Elevator",
     "tags": {
-	"description":"Smart Elevator Template",
+	"description":"Smart Elevator Simualtion",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Elevator.png",
       "attribution": "public"},
-    "labels": ["smartbuilding","advanced", "elevator", "utility" ],
+    "labels": ["smartbuilding","advanced", "utility" ],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

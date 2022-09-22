@@ -1,0 +1,87 @@
+{
+    "name": "Trash Can",
+     "tags": {
+	"description":"Trash Can for Smart City",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Trash%20Can.png",
+      "attribution": "public"},
+    "labels": ["#SmartCity", "utility"],
+    "version": 1,
+    "definition": {
+        "protocol": "http",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "https://5hex2r.sse.codesandbox.io/endpoint",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": "",
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "method": "POST"
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  var API_Key = glob.get('API_Key')\n\n  state.smart_city = glob.get('Enable_Smart_City')\n\n  state.r_latitude = chance.floating({ min: 12.8, max: 13.1, fixed: 6 });\n  state.r_longitude = chance.floating({ min: 77.5, max: 77.8, fixed: 6 });\n\n  var url = 'https://roads.googleapis.com/v1/nearestRoads?points=' + state.r_latitude + \",\" + state.r_longitude + '&key=' + API_Key\n\n  var res = rest.get(url)\n\n  state.latitude = res.snappedPoints[0].location.latitude\n  state.longitude = res.snappedPoints[0].location.longitude\n  state.fill = chance.integer({ min: 0, max: 25 })\n  state.fill_alert = false\n  state.alerted = false\n\n  next('Day')\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Day": {
+                    "name": "Day",
+                    "isEnabled": true,
+                    "sender": "{\n  let currentHour = dayjs().hour();\n\n  var message = {\n    device: \"trash_can\",\n    id: client(),\n    latitude: state.latitude,\n    longitude: state.longitude,\n    fill: state.fill,\n    alert: state.fill_alert,\n    status: \"active\",\n  };\n  \n  if (state.smart_city == true) {\n    for (let i = 0; i < 50; ++i) {\n      let count = mailbox.count(\"trash_can_\" + client() + \"_rx\");\n      if (count > 0) {\n        let mailbox_message = mailbox.pop(\"trash_can_\" + client() + \"_rx\");\n        let garbage_truck = mailbox_message;\n\n        if (garbage_truck.device == \"garbage_truck\") next(\"Cleaning\");\n      }\n    }\n  }\n  console.log(\"Currently it's: \" + currentHour)\n\n  if (currentHour => 7 && currentHour < 20) {\n    if (state.fill < 100) {\n      var trash = chance.integer({ min: 1, max: 6 });\n      state.fill += trash;\n    }\n    else {\n      state.fill = 100\n    }\n\n    if (state.fill >= 80 && state.alerted == false) {\n      state.fill_alert = true;\n      mailbox.post(\"trash_can_\" + client() + \"_tx\", message);\n      state.alerted = true;\n    }\n\n    if (state.smart_city == true) {\n      mailbox.post(\"trash_can_\" + client(), message);\n    }\n    return JSON.stringify(message, null, 2);\n  } else {\n    next(\"Night\");\n  }\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 1
+                },
+                "Night": {
+                    "name": "Night",
+                    "isEnabled": true,
+                    "sender": "{\n  let currentHour = dayjs().hour();\n\n  var message = {\n    device: \"trash_can\",\n    id: client(),\n    latitude: state.latitude,\n    longitude: state.longitude,\n    fill: state.fill,\n    alert: state.fill_alert,\n    status: \"active\",\n  };\n\n  if (state.smart_city == true) {\n    for (let i = 0; i < 50; ++i) {\n      let count = mailbox.count(\"trash_can_\" + client() + \"_rx\");\n      if (count > 0) {\n        let mailbox_message = mailbox.pop(\"trash_can_\" + client() + \"_rx\");\n        let garbage_truck = mailbox_message;\n\n        if (garbage_truck.device == \"garbage_truck\") {\n          next(\"Cleaning\");\n        }\n      }\n    }\n  }\n  console.log(\"Currently it's: \"+currentHour)\n  if (currentHour < 7 || currentHour >= 20) {\n    if (state.fill < 100) {\n      var trash = chance.integer({ min: 1, max: 2 });\n      state.fill += trash;\n    }\n    else {\n      state.fill = 100\n    }\n\n    if (state.fill >= 80 && state.alerted == false) {\n      state.fill_alert = true;\n      mailbox.post(\"trash_can_\" + client() + \"_tx\", message);\n      state.alerted = true;\n    }\n\n    if (state.smart_city == true) {\n      mailbox.post(\"trash_can_\" + client(), message);\n    }\n\n    return JSON.stringify(message, null, 2);\n  } else {\n    next(\"Day\");\n  }\n}\n",
+                    "receiver": "",
+                    "index": 2,
+                    "icon": ""
+                },
+                "Cleaning": {
+                    "name": "Cleaning",
+                    "isEnabled": true,
+                    "sender": "{\n  let currentHour = dayjs().hour();\n\n  state.fill = 0;\n  state.fill_alert = false;\n\n  if (currentHour > 7 && currentHour < 20) {\n    next(\"Day\");\n  } else {\n    next(\"Night\");\n  }\n\n  var message = {\n    device: \"trash_can\",\n    id: client(),\n    latitude: state.latitude,\n    longitude: state.longitude,\n    fill: state.fill,\n    alert: state.fill_alert,\n    status: \"cleaning\",\n  };\n\n  if (state.smart_city == true) {\n    mailbox.post(\"trash_can_\" + client(), message);\n    return JSON.stringify(message, null, 2);\n  } else {\n    return JSON.stringify(message, null, 2);\n  }\n}\n",
+                    "receiver": "",
+                    "index": 3,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 4
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}

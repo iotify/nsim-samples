@@ -1,10 +1,10 @@
 {
     "name": "Raspberry Pi",
     "tags": {
-	"description":"Raspberry Pi Template",
+	"description":"Raspberry Pi Simulation",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Raspberry%20Pi.png",
       "attribution": "public"},
-    "labels": ["development","advanced", "microprocessor", "iot" ],
+    "labels": ["development","advanced", "microprocessor" ],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

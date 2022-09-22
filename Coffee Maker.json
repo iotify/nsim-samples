@@ -1,10 +1,10 @@
 {
     "name": "Coffee Maker",
     "tags": {
-	"description":"Smart Coffee Maker Template",
+	"description":"Smart Coffee Maker Simualtion",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Coffee%20Maker.png",
       "attribution": "public"},
-    "labels": ["smarthome","coffee maker", "appliance", "home" ],
+    "labels": ["smarthome", "appliance"],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

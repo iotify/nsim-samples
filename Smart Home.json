@@ -1,10 +1,10 @@
 {
     "name": "Smart Home",
     "tags": {
-	"description":"Smart Home Template",
+	"description":"Smart Home Simulation",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Home.png",
       "attribution": "public"},
-    "labels": ["smarthome","advanced", "lights", "home" ],
+    "labels": ["smarthome","advanced", "lights" ],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

@@ -1,10 +1,10 @@
 {
     "name": "Smart Fridge",
     "tags": {
-	"description":"Smart Fridge Template",
+	"description":"Smart Fridge Simulation",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Fridge.png",
       "attribution": "public"},
-    "labels": ["smarthome","fridge", "appliance", "home" ],
+    "labels": ["smarthome", "appliance"],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

@@ -1,7 +1,10 @@
 {
     "name": "Windmill",
-    "tags": {},
-    "labels": [],
+    "tags": {
+	"description":"Windmill Simulation",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Windmill.png",
+      "attribution": "public"},
+    "labels": ["utility","electricity"],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

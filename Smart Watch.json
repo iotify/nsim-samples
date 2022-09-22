@@ -1,10 +1,10 @@
 {
     "name": "Smart Watch",
     "tags": {
-	"description":"Smart Watch Template",
+	"description":"Smart Watch Simulation",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Watch.png",
       "attribution": "public"},
-    "labels": ["smartdevice","advanced", "watch", "wearable" ],
+    "labels": ["smartdevice","advanced", "wearable" ],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

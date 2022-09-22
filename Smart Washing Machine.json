@@ -1,10 +1,10 @@
 {
     "name": "Smart Washing Machine",
     "tags": {
-	"description":"Smart Washing Machine Template",
+	"description":"Smart Washing Machine Simulation",
       "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Smart%20Washing%20Machine.png",
       "attribution": "public"},
-    "labels": ["smarthome","washing machine", "appliance", "home" ],
+    "labels": ["smarthome", "appliance" ],
     "version": 1,
     "definition": {
         "protocol": "mqtt",

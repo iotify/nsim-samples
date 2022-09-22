@@ -1,0 +1,107 @@
+{
+    "name": "Garbage Truck",
+    "tags": {
+	"description":"Garbage Truck for Smart City",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Garbage%20Truck.png",
+      "attribution": "public"},
+    "labels": ["#SmartCity","transportation", "utility"],
+    "version": 1,
+    "definition": {
+        "protocol": "http",
+        "clientId": "",
+        "additionalPackages": {
+            "geolib": {
+                "content": "geolib",
+                "name": "geolib",
+                "type": "npm",
+                "isLoading": false,
+                "errorMessage": "",
+                "validity": {
+                    "isImportNameValid": true,
+                    "isContentValid": true
+                }
+            }
+        },
+        "strategy": "Default",
+        "settings": {
+            "url": "https://5hex2r.sse.codesandbox.io/endpoint",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 100000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": "",
+            "headers": {
+                "Content-Type": "application/json"
+            },
+            "method": "POST"
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  state.API_Key = glob.get('API_Key')\n  state.smart_city = glob.get('Enable_Smart_City')\n\n  state.r_latitude = chance.floating({ min: 12.8, max: 13.1, fixed: 6 });\n  state.r_longitude = chance.floating({ min: 77.5, max: 77.8, fixed: 6 });\n\n  var url = 'https://roads.googleapis.com/v1/nearestRoads?points=' + state.r_latitude + \",\" + state.r_longitude + '&key=' + state.API_Key\n\n  var res = rest.get(url)\n\n  state.latitude = state.base_latitude = res.snappedPoints[0].location.latitude\n  state.longitude = state.base_longitude = res.snappedPoints[0].location.longitude\n\n  state.dest_latitude = state.latitude\n  state.dest_longitude = state.longitude\n\n  state.land_fill_latitude = chance.floating({ min: 12.8, max: 13.1, fixed: 6 });\n  state.land_fill_longitude = chance.floating({ min: 77.5, max: 77.8, fixed: 6 });\n\n  next('Idle')\n}",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Idle": {
+                    "name": "Idle",
+                    "isEnabled": true,
+                    "sender": "{\n  var message = {\n    device: \"garbage_truck\",\n    id: client(),\n    dest_latitude: state.dest_latitude,\n    dest_longitude: state.dest_longitude,\n    current_latitude: state.latitude,\n    current_longitude: state.longitude,\n    status: \"Idle\",\n  };\n\n  if (state.smart_city == true) {\n    for (let i = 0; i < 50; ++i) {\n      let count = mailbox.count(\"garbage_truck_\" + client() + \"_rx\");\n      if (count > 0) {\n        let mailbox_message = mailbox.pop(\"garbage_truck_\" + client() + \"_rx\");\n        let trash_can = mailbox_message;\n        console.log(\"RECIEVED TC\"+ JSON.stringify(trash_can))\n        state.trash_can_id = trash_can.id;\n        state.trash_can_latitude = state.dest_latitude = trash_can.latitude;\n        state.trash_can_longitude = state.dest_longitude = trash_can.longitude;\n        console.log(\"Trash can filled, going to empty\");\n\n        state.current_location = \"\" + state.latitude + \",\" + state.longitude;\n        state.trash_can_location =\n          \"\" + state.trash_can_latitude + \",\" + state.trash_can_longitude;\n\n        next(\"Driving_TC\");\n      }\n    }\n  }\n  else {\n    state.trash_can_latitude = state.dest_latitude = chance.floating({ min: 12.8, max: 13.1, fixed: 6 });\n    state.trash_can_longitude = state.dest_longitude = chance.floating({ min: 77.5, max: 77.8, fixed: 6 });\n\n    console.log(\"Trash can filled, going to empty\");\n\n    state.current_location = \"\" + state.latitude + \",\" + state.longitude;\n    state.trash_can_location =\n      \"\" + state.trash_can_latitude + \",\" + state.trash_can_longitude;\n\n    next(\"Driving_TC\");\n  }\n\n  if (state.smart_city == true) {\n    mailbox.post(\"garbage_truck_tx\", message);\n  }\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 1,
+                    "icon": ""
+                },
+                "Driving_TC": {
+                    "name": "Driving_TC",
+                    "isEnabled": true,
+                    "sender": "{\n  var message = {\n    device: \"garbage_truck\",\n    id: client(),\n    dest_latitude: state.dest_latitude,\n    dest_longitude: state.dest_longitude,\n    current_latitude: state.latitude,\n    current_longitude: state.longitude,\n    status: \"Driving to trash can\",\n  };\n\n  state.location = drive({\n    start: state.current_location,\n    end: state.trash_can_location,\n    key: state.API_Key,\n  });\n\n  state.latitude = state.location.latitude;\n  state.longitude = state.location.longitude;\n\n  if (state.location.finished) {\n    console.log(\"We have reached the trash can; cleaning\");\n    state.current_location = state.latitude + \",\" + state.longitude;\n    if (state.smart_city == true) {\n      mailbox.post(\"trash_can_\" + state.trash_can_id + \"_rx\", message);\n    }\n    state.dest_latitude = state.land_fill_latitude;\n    state.dest_longitude = state.land_fill_longitude;\n    state.land_fill_location =\n      \"\" + state.land_fill_latitude + \",\" + state.land_fill_longitude;\n\n    next(\"Driving_LF\");\n  }\n\n  if (state.smart_city == true) {\n    mailbox.post(\"garbage_truck_tx\", message);\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 2,
+                    "icon": ""
+                },
+                "Driving_LF": {
+                    "name": "Driving_LF",
+                    "isEnabled": true,
+                    "sender": "{\n  var message = {\n    device: \"garbage_truck\",\n    id: client(),\n    dest_latitude: state.dest_latitude,\n    dest_longitude: state.dest_longitude,\n    current_latitude: state.latitude,\n    current_longitude: state.longitude,\n    status: \"Driving to land fill\",\n  };\n\n  state.location = drive({\n    start: state.current_location,\n    end: state.land_fill_location,\n    key: state.API_Key,\n  });\n\n  state.latitude = state.location.latitude;\n  state.longitude = state.location.longitude;\n\n  if (state.location.finished) {\n    console.log(\"We have reached the land fill; Emptying garbage\");\n    state.current_location = state.latitude + \",\" + state.longitude;\n\n    state.dest_latitude = state.base_latitude;\n    state.dest_longitude = state.base_longitude;\n\n    state.base_location = \"\" + state.base_latitude + \",\" + state.base_longitude;\n\n    next(\"Driving_Base\");\n  }\n\n  if (state.smart_city == true) {\n    mailbox.post(\"garbage_truck_tx\", message);\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 3,
+                    "icon": ""
+                },
+                "Driving_Base": {
+                    "name": "Driving_Base",
+                    "isEnabled": true,
+                    "sender": "{\n  var message = {\n    device: \"garbage_truck\",\n    id: client(),\n    dest_latitude: state.dest_latitude,\n    dest_longitude: state.dest_longitude,\n    current_latitude: state.latitude,\n    current_longitude: state.longitude,\n    status: \"Driving to base station\",\n  };\n\n  state.location = drive({\n    start: state.current_location,\n    end: state.base_location,\n    key: state.API_Key,\n  });\n\n  state.latitude = state.location.latitude;\n  state.longitude = state.location.longitude;\n\n  if (state.location.finished) {\n    console.log(\"We have reached the base station, waiting for next alert\");\n    state.current_location = state.latitude + \",\" + state.longitude;\n\n    state.dest_latitude = state.base_latitude;\n    state.dest_longitude = state.base_longitude;\n\n    state.base_location = \"\" + state.base_latitude + \",\" + state.base_longitude;\n\n    next(\"Idle\");\n  }\n\n  if (state.smart_city == true) {\n    mailbox.post(\"garbage_truck_tx\", message);\n  }\n\n  return JSON.stringify(message, null, 2);\n}\n",
+                    "receiver": "",
+                    "index": 4,
+                    "icon": ""
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 5
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
