@@ -1,7 +1,16 @@
 {
-    "name": "sparkplug",
-    "tags": {},
-    "labels": [],
+    "name": "MQTT Sparkplug EON",
+    "tags": {
+        "description": "MQTT Sparkplug B EON node simulation",
+        "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/robot.png",
+        "attribution": "public"
+    },
+    "labels": [
+        "advanced",
+        "transportation",
+        "logistics",
+        "industry40"
+    ],
     "version": 1,
     "locked": false,
     "definition": {
