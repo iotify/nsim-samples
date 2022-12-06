@@ -1,0 +1,81 @@
+{
+    "name": "sparkplug",
+    "tags": {},
+    "labels": [],
+    "version": 1,
+    "locked": false,
+    "definition": {
+        "protocol": "none",
+        "clientId": "",
+        "additionalPackages": {
+            "SparkplugClient": {
+                "content": "sparkplug-client",
+                "name": "SparkplugClient",
+                "type": "npm",
+                "isLoading": false,
+                "errorMessage": "",
+                "validity": {
+                    "isImportNameValid": true,
+                    "isContentValid": true
+                }
+            }
+        },
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": "",
+            "headers": {
+                "accept": "application/json"
+            },
+            "method": "GET"
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n\n  //EON simulator for MQTT Sparkplug B \n\n  var config = {\n    'serverUrl': 'mqtt://broker.hivemq.com:1883',\n    'username': '', password:'',\n    'groupId': 'iotify',\n    'edgeNode': 'DeviceA',\n    'clientId': 'iotify_0',\n    'version': 'spBv1.0'\n  };\n\n  state.hwVersion = 'Emulated Hardware 1';\n  state.swVersion = 'v1.0.0';\n  state.deviceId = 'Emulated IoTIFY Sensor';\n\n  let sparkPlugClient;\n  \n  // Get BIRTH payload for the edge node\n  function getNodeBirthPayload () {\n    return {\n      \"timestamp\": new Date().getTime(),\n      \"metrics\": [\n        {\n          \"name\": \"Node Control/Rebirth\",\n          \"type\": \"boolean\",\n          \"value\": false\n        },\n        {\n          \"name\": \"Template1\",\n          \"type\": \"template\",\n          \"value\": {\n            \"isDefinition\": true,\n            \"metrics\": [\n              { \"name\": \"myBool\", \"value\": false, \"type\": \"boolean\" },\n              { \"name\": \"myInt\", \"value\": 0, \"type\": \"int\" }\n            ],\n            \"parameters\": [\n              {\n                \"name\": \"param1\",\n                \"type\": \"string\",\n                \"value\": \"value1\"\n              }\n            ]\n          }\n        }\n      ]\n    };\n  };\n\n    // Get BIRTH payload for the device\n  function getDeviceBirthPayload () {\n    return {\n      \"timestamp\": new Date().getTime(),\n      \"metrics\": [\n        { \"name\": \"my_boolean\", \"value\": Math.random() > 0.5, \"type\": \"boolean\" },\n        { \"name\": \"my_double\", \"value\": Math.random() * 0.123456789, \"type\": \"double\" },\n        { \"name\": \"my_float\", \"value\": Math.random() * 0.123, \"type\": \"float\" },\n        { \"name\": \"my_int\", \"value\": Math.ceil(Math.random()*1024), \"type\": \"int\" },\n        { \"name\": \"my_long\", \"value\": Math.random() * 214748364700, \"type\": \"long\" },\n        { \"name\": \"Inputs/0\", \"value\": true, \"type\": \"boolean\" },\n        { \"name\": \"Inputs/1\", \"value\": 0, \"type\": \"int\" },\n        { \"name\": \"Inputs/2\", \"value\": 1.23, \"type\": \"float\" },\n        { \"name\": \"Outputs/0\", \"value\": true, \"type\": \"boolean\" },\n        { \"name\": \"Outputs/1\", \"value\": 0, \"type\": \"int\" },\n        { \"name\": \"Outputs/2\", \"value\": 1.23, \"type\": \"float\" },\n        { \"name\": \"Properties/hw_version\", \"value\": state.hwVersion, \"type\": \"string\" },\n        { \"name\": \"Properties/sw_version\", \"value\": state.swVersion, \"type\": \"string\" },\n        {\n          \"name\": \"my_dataset\",\n          \"type\": \"dataset\",\n          \"value\": {\n            \"numOfColumns\": 2,\n            \"types\": [\"string\", \"string\"],\n            \"columns\": [\"str1\", \"str2\"],\n            \"rows\": [\n              [\"x\", \"a\"],\n              [\"y\", \"b\"]\n            ]\n          }\n        },\n        {\n          \"name\": \"TemplateInstance1\",\n          \"type\": \"template\",\n          \"value\": {\n            \"templateRef\": \"Template1\",\n            \"isDefinition\": false,\n            \"metrics\": [\n              { \"name\": \"myBool\", \"value\": true, \"type\": \"boolean\" },\n              { \"name\": \"myInt\", \"value\": 100, \"type\": \"int\" }\n            ],\n            \"parameters\": [\n              {\n                \"name\": \"param1\",\n                \"type\": \"string\",\n                \"value\": \"value2\"\n              }\n            ]\n          }\n        }\n      ]\n    };\n  };\n\n  \n  // Create the SparkplugClient\n  let sparkplugClient = SparkplugClient.newClient(config);\n\n  // Create Incoming Message Handler\n  sparkplugClient.on('message', function (topic, payload) {\n        console.log(\"Received message\", topic, payload);\n  })\n\n  // Create 'birth' handler\n  sparkplugClient.on('birth', function () {\n    // Publish Node BIRTH certificate\n    console.log(\"Publishing Birth certificate\");\n\n    sparkplugClient.publishNodeBirth(getNodeBirthPayload());\n    // Publish Device BIRTH certificate\n    sparkplugClient.publishDeviceBirth(state.deviceId, getDeviceBirthPayload());\n\n  });\n\n  // Create node command handler\n  sparkplugClient.on('ncmd', function (payload) {\n        var timestamp = payload.timestamp,\n          metrics = payload.metrics;\n\n        if (metrics !== undefined && metrics !== null) {\n          for (var i = 0; i < metrics.length; i++) {\n            var m = metrics[i];\n            if (m.name == \"Node Control/Rebirth\" && m.value) {\n              console.log(\"Received 'Rebirth' command\");\n              // Publish Node BIRTH certificate\n              sparkplugClient.publishNodeBirth(getNodeBirthPayload());\n              // Publish Device BIRTH certificate\n              sparkplugClient.publishDeviceBirth(state.deviceId, getDeviceBirthPayload());\n            }\n          }\n        }\n  });\n\n      // Create device command handler\n    sparkplugClient.on('dcmd', function (deviceId, payload) {\n      var timestamp = payload.timestamp,\n        metrics = payload.metrics,\n        inboundMetricMap = {},\n        outboundMetric = [],\n        outboundPayload;\n\n      console.log(\"Command recevied for device \" + deviceId);\n\n      // Loop over the metrics and store them in a map\n      if (metrics !== undefined && metrics !== null) {\n        for (var i = 0; i < metrics.length; i++) {\n          var m = metrics[i];\n          inboundMetricMap[m.name] = m.value;\n        }\n      }\n      if (inboundMetricMap[\"Outputs/0\"] !== undefined && inboundMetricMap[\"Outputs/0\"] !== null) {\n        console.log(\"Outputs/0: \" + inboundMetricMap[\"Outputs/0\"]);\n        outboundMetric.push({ \"name\": \"Inputs/0\", \"value\": inboundMetricMap[\"Outputs/0\"], \"type\": \"boolean\" });\n        outboundMetric.push({ \"name\": \"Outputs/0\", \"value\": inboundMetricMap[\"Outputs/0\"], \"type\": \"boolean\" });\n        console.log(\"Updated value for Inputs/0 \" + inboundMetricMap[\"Outputs/0\"]);\n      } else if (inboundMetricMap[\"Outputs/1\"] !== undefined && inboundMetricMap[\"Outputs/1\"] !== null) {\n        console.log(\"Outputs/1: \" + inboundMetricMap[\"Outputs/1\"]);\n        outboundMetric.push({ \"name\": \"Inputs/1\", \"value\": inboundMetricMap[\"Outputs/1\"], \"type\": \"int\" });\n        outboundMetric.push({ \"name\": \"Outputs/1\", \"value\": inboundMetricMap[\"Outputs/1\"], \"type\": \"int\" });\n        console.log(\"Updated value for Inputs/1 \" + inboundMetricMap[\"Outputs/1\"]);\n      } else if (inboundMetricMap[\"Outputs/2\"] !== undefined && inboundMetricMap[\"Outputs/2\"] !== null) {\n        console.log(\"Outputs/2: \" + inboundMetricMap[\"Outputs/2\"]);\n        outboundMetric.push({ \"name\": \"Inputs/2\", \"value\": inboundMetricMap[\"Outputs/2\"], \"type\": \"float\" });\n        outboundMetric.push({ \"name\": \"Outputs/2\", \"value\": inboundMetricMap[\"Outputs/2\"], \"type\": \"float\" });\n        console.log(\"Updated value for Inputs/2 \" + inboundMetricMap[\"Outputs/2\"]);\n      }\n\n      outboundPayload = {\n        \"timestamp\": new Date().getTime(),\n        \"metrics\": outboundMetric\n      };\n\n      // Publish device data\n      sparkplugClient.publishDeviceData(deviceId, outboundPayload);\n  });\n\n      \n  // Publish device data\n  state.client = sparkplugClient;\n\n  next('Running');\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Running": {
+                    "name": "Running",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n\n  let getDataPayload = function () {\n    return {\n      \"timestamp\": new Date().getTime(),\n      \"metrics\": [\n        { \"name\": \"my_boolean\", \"value\": Math.random() > 0.5, \"type\": \"boolean\" },\n        { \"name\": \"my_double\", \"value\": Math.random() * 0.123456789, \"type\": \"double\" },\n        { \"name\": \"my_float\", \"value\": Math.random() * 0.123, \"type\": \"float\" },\n        { \"name\": \"my_int\", \"value\": Math.random() * 100, \"type\": \"int\" },\n        { \"name\": \"my_long\", \"value\": Math.random() * 214748364700, \"type\": \"long\" }\n      ]\n    };\n  };\n  \n  state.client.publishDeviceData(state.deviceId, getDataPayload());\n  \n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 1
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 2
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
