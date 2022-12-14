@@ -1,0 +1,85 @@
+{
+    "name": "kafka-producer",
+ 		"tags": {
+        "description": "Kafka Producer",
+        "icon": "https://upload.wikimedia.org/wikipedia/commons/5/53/Apache_kafka_wordtype.svg",
+        "attribution": "public"
+    },
+    "labels": [
+        "advanced",
+        "kafka",
+        "protocol"
+    ],
+    "version": 1,
+    "locked": false,
+    "definition": {
+        "protocol": "none",
+        "clientId": "",
+        "additionalPackages": {
+            "Kafka": {
+                "content": "kafkajs",
+                "name": "Kafka",
+                "type": "npm",
+                "isLoading": false,
+                "errorMessage": "",
+                "validity": {
+                    "isImportNameValid": true,
+                    "isContentValid": true
+                }
+            }
+        },
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "\n{\n\n\n  // Please provide your logic here.\n  let kafka = new Kafka.Kafka({\n    clientId: 'iotify_' + client(),\n    brokers: ['KAFKA_BROKER_ADDRESS'],\n    ssl: true,\n    sasl: {\n      mechanism: 'plain',\n      username: 'KAFKA_USERNAME',\n      password: 'KAFKA_PASSWORD'\n    }\n  });\n\n  state.client = kafka.producer()\n\n  await state.client.connect()\n\n\n  \n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  next('Running');\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Running": {
+                    "name": "Running",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n  for (let i = 0; i < 100; i++) {\n    await delay( 10);\n    await state.client.send({\n      topic: 'iotify',\n      messages: [\n        { key: 'key' + index(), value: chance.string({ length: 1024  }), partition: 0 },\n        { key: 'key' + index(), value: chance.string({ length: 1024  }), partition: 1 },\n        { key: 'key' + index(), value: chance.string({ length: 1024  }), partition: 2 }\n      ],\n    })\n  }\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 1
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 2
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
