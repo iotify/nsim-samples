@@ -1,6 +1,10 @@
 {
     "name": "Mailbox Hub",
-    "tags": {},
+    "tags": {
+	  "description":"Hub for Mailbox Blog Article",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/mailbox.png",
+      "attribution": "public"
+    },
     "labels": [],
     "version": 1,
     "locked": false,
