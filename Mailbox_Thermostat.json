@@ -1,6 +1,10 @@
 {
     "name": "Mailbox Thermostat",
-    "tags": {},
+    "tags": {
+	  "description":"Thermostat for Mailbox Blog Article",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/mailbox.png",
+      "attribution": "public"
+    },
     "labels": [],
     "version": 1,
     "locked": true,
