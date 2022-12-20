@@ -1,0 +1,56 @@
+{
+    "name": "Mailbox Hub",
+    "tags": {},
+    "labels": [],
+    "version": 1,
+    "locked": false,
+    "definition": {
+        "protocol": "mqtt",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "iotify/thermostat/#"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  // Read the article 'LAN Simulation with the IoTIFY Mailbox API'\n  // at https://sh.iotify.io/iotify-mailbox\n\n  \n  // The Gateway listens to this channel. \n  let rx_channel_id = 'gateway_' + client();\n\n  // Clear any stale data present\n  if (iteration() === 0) mailbox.delete(rx_channel_id)\n\n  // Retrieve the count of messages if any are present\n  let messageCount = mailbox.count(rx_channel_id)\n  if (messageCount > 0) {\n    console.log(messageCount + ' Message(s) are present for the gateway to process.')\n    for (let i = 0; i < messageCount; ++i){\n      processMessage(mailbox.pop(rx_channel_id))\n    }\n  }  \n\n  // Send a periodic Ping to the thermostat\n  let thermostat_channel_id = \"thermostat_\" + client();\n  mailbox.post(thermostat_channel_id, {\n    topic: \"ping\",\n    payload: {},\n  });\n\n  // Publish device messages to MQTT\n  async function processMessage(message) {\n    console.log(message)\n    await protocol.publish(message.payload, message.topic)\n  }\n\n}\n",
+                    "receiver": "{\n  if (response.topic === \"iotify/thermostat\") {\n\n    let thermostat_channel_id = \"thermostat_\" + client();\n\n    console.log(\"Received message for Thermostat\")\n\n    mailbox.post(thermostat_channel_id, {\n      topic: response.topic,\n      payload: response.message,\n    });    \n  }\n}\n",
+                    "icon": "",
+                    "index": 0
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // let testData = {\n  //   topic: \"iotify/thermostat/update\",\n  //   payload: {\n  //     t: 30,\n  //     h:40\n  //   }\n  // }\n\n  // mailbox.post(rx_channel_id, testData)\n\n\n}\n",
+                    "receiver": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n\n}\n",
+                    "icon": "",
+                    "index": 2
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
