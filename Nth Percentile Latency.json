@@ -1,0 +1,61 @@
+{
+    "name": "REST Nth Percentile Latency",
+    "tags": {
+	"description":"Test to measure percentile Latency",
+      "icon": "https://raw.githubusercontent.com/iotify/nsim-samples/main/Images/Latency_Test.png",
+      "attribution": "public"
+	},
+    "labels": [],
+    "version": 1,
+    "locked": false,
+    "definition": {
+        "protocol": "none",
+        "clientId": "",
+        "additionalPackages": {},
+        "strategy": "Default",
+        "settings": {
+            "url": "mqtt://broker.hivemq.com:1883",
+            "topic": "/hello/",
+            "subscriptionTopics": [
+                "/hello",
+                "/world"
+            ],
+            "timeout": 10000,
+            "qos": 0,
+            "retain": false,
+            "keepalive": 10000,
+            "reconnectPeriod": 60000,
+            "connectTimeout": 60000,
+            "username": "",
+            "password": "",
+            "identity": "",
+            "psk": "",
+            "key": "",
+            "cert": "",
+            "ca": ""
+        },
+        "model": {
+            "currentState": "Init",
+            "stateMap": {
+                "Init": {
+                    "name": "Init",
+                    "isEnabled": true,
+                    "sender": "{\n  // Set the percentile threshold and endpoint here\n  let N = 50;\n  let TEST_ENDPOINT = \"https://YOUR_ENDPOINT.HERE/\"\n\n  // Unless it is the is the final iteration, do a rest.get against the endpoint \n  if (iteration() !== jobRepeat() - 1) {\n    try {\n  \n      let start = Date.now();\n      state.remote_config = rest.get(TEST_ENDPOINT);\n      let latency = Date.now() - start; // Compute the latency of the request.  \n\n      console.log(`Fetched in ${latency}ms`);\n      metric.add(\"REST_GET_Latency\", latency);\n\n      // Store the values in a mailbox to be aggregated in the next iteration\n      mailbox.post(`iteration_${iteration()}`, latency);\n\n    } catch (e) {\n      console.error(\"Failed to fetch config. \", e);\n      metric.add('Failed_Requests')\n    }\n  }\n\n  // The first client will do the aggregation for the data from the previous iteration. \n  if (client() === 0 && iteration() > 0) {\n    \n    let index = iteration() - 1;\n    console.log(`Computing ${N}th percentile for iteration ${index}`);\n\n    let latencies = mailbox.dump(`iteration_${index}`);\n    latencies.sort(function (a, b) {\n      return a - b;\n    });\n\n    let position = Math.ceil(N * 0.01 * latencies.length) - 1;\n\n    console.log(\n      `${N}th percentile for iteration ${index} is ${latencies[position]}`\n    );\n    metric.add(`${N}th_Percentile_Latency`, latencies[position]);\n  }\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 0
+                },
+                "Finished": {
+                    "name": "Finished",
+                    "isEnabled": true,
+                    "sender": "\n{\n  // Please provide your logic here.\n\n  // The device model state could be transitioned by calling next()\n  // To transition to a specific state pass state name as argument e.g.\n  // next('Running');\n\n}\n",
+                    "receiver": "",
+                    "icon": "",
+                    "index": 2
+                }
+            },
+            "setup": "",
+            "teardown": ""
+        }
+    }
+}
